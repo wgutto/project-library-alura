@@ -1,20 +1,19 @@
 import { author } from "../models/Author.js"
 
 class authorController {
-    static async getAllAuthors(req, res) {
+    static getAllAuthors = async (req, res, next) => {
         try {
             const listAuthors = await author.find({})
 
             return res.status(200).json(listAuthors)
         } catch (error) {
             console.error(`Erro ao buscar autores: ${error.message}`)
-            return res.status(500).json({
-                message: "Erro interno no servidor"
-            })
+            
+            next(error)
         }
     }
 
-    static async registerAuthor(req, res) {
+    static registerAuthor = async (req, res, next) => {
         try {
             const body = req.body
 
@@ -26,39 +25,37 @@ class authorController {
             })
         } catch (error) {
             console.error(`Erro ao cadastrar autor: ${error.message}`)
-            return res.status(500).json({
-                message: "Erro interno no servidor"
-            })
+            
+            next(error)
         }
     }
 
-    static async getAuthorById(req, res) {
+    static getAuthorById = async (req, res, next) => {
         try {
             const { id } = req.params
 
             const authorFound = await author.findById(id)
 
-            if (!authorFound) return res.status(400).json({
-                message: "Autor nao foi encontrado"
+            if (!authorFound) return res.status(404).json({
+                message: "ID do autor não foi encontrado"
             })
 
             return res.status(200).json(authorFound)
         } catch (error) {
             console.error(`Erro ao buscar um autor: ${error.message}`)
-            return res.status(500).json({
-                message: "Erro interno no servidor"
-            })
+
+            next(error)
         }
     }
 
-    static async updateAuthor(req, res) {
+    static updateAuthor = async (req, res, next) => {
         try {
             const { id } = req.params
             const body = req.body
 
             const authorUpdated = await author.findByIdAndUpdate(id, body)
 
-            if (!authorUpdated) return res.status(400).json({
+            if (!authorUpdated) return res.status(404).json({
                 message: "Erro ao atualizar o autor"
             })
 
@@ -67,30 +64,24 @@ class authorController {
             })
         } catch (error) {
             console.error(`Erro ao atualizar um autor: ${error.message}`)
-            return res.status(500).json({
-                message: "Erro interno no servidor"
-            })
+            
+            next(error)
         }
     }
 
-    static async deleteAuthor(req, res) {
+    static deleteAuthor = async (req, res, next) => {
         try {
             const { id } = req.params
 
-            const authorDeleted = await author.findByIdAndDelete(id)
-
-            if (!authorDeleted) return res.status(401).json({
-                message: "Erro ao deletar autor"
-            })
+            await author.findByIdAndDelete(id)
 
             return res.status(200).json({
                 message: "Autor deletado com sucesso"
             })
         } catch (error) {
             console.error(`Erro ao deletar um autor: ${error.message}`)
-            return res.status(500).json({
-                message: "Erro interno no servidor"
-            })
+
+            next(error)
         }
     }
 }
