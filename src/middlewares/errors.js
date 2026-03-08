@@ -1,21 +1,19 @@
 import mongoose from "mongoose"
+import ErrorBase from "../errors/ErrorBase.js"
+import RequestIncorrect from "../errors/RequestIncorrect.js"
+import ErrorValidation from "../errors/ErrorValidation.js"
+import ErrorNotFound from "../errors/ErrorNotFound.js"
 
 // eslint-disable-next-line no-unused-vars
 const errors = (error, req, res, next) => {
     if (error instanceof mongoose.Error.CastError) {
-        return res.status(400).json({
-            message: "Um ou mais dados fornecidos estão incorretos"
-        })
+        return new RequestIncorrect().sendResponse(res)
+    } else if (error instanceof ErrorNotFound) {
+        error.sendResponse(res)
     } else if (error instanceof mongoose.Error.ValidationError) {
-        const messagesError = Object.values(error.errors).map(error => error.message).join("; ")
-
-        return res.status(400).json({
-            message: `Os seguintes erros foram encontrados: ${messagesError}`
-        })
+        return new ErrorValidation(error).sendResponse(res)
     } else {
-        return res.status(500).json({
-            message: "Erro interno no servidor"
-        })
+        return new ErrorBase().sendResponse(res)
     }
 }
 

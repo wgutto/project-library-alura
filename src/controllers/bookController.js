@@ -1,3 +1,4 @@
+import ErrorNotFound from "../errors/ErrorNotFound.js"
 import book from "../models/Book.js"
 
 class BookController {
@@ -36,9 +37,7 @@ class BookController {
 
             const bookFound = await book.findById(id)
 
-            if (!bookFound) return res.status(404).json({
-                message: "ID do livro não foi encontrado"
-            })
+            if (!bookFound) return next(new ErrorNotFound("ID do livro não foi encontrado"))
 
             return res.status(200).json(bookFound)
         } catch (error) {
@@ -55,9 +54,7 @@ class BookController {
 
             const bookUpdated = await book.findByIdAndUpdate(id, body)
 
-            if (!bookUpdated) return res.status(400).json({
-                message: "Erro ao atualizar o livro"
-            })
+            if(!bookUpdated) return next(new ErrorNotFound("ID do livro não foi encontrado"))
 
             return res.status(200).json({
                 message: "Livro atualizado com sucesso"
@@ -73,7 +70,9 @@ class BookController {
         try {
             const { id } = req.params
 
-            await book.findByIdAndDelete(id)
+            const bookDeleted = await book.findByIdAndDelete(id)
+
+            if(!bookDeleted) return next(new ErrorNotFound("ID do livro não foi encontrado"))
 
             return res.status(200).json({
                 message: "Livro deletado com sucesso"

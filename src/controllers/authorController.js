@@ -1,3 +1,4 @@
+import ErrorNotFound from "../errors/ErrorNotFound.js"
 import { author } from "../models/Author.js"
 
 class authorController {
@@ -36,9 +37,7 @@ class authorController {
 
             const authorFound = await author.findById(id)
 
-            if (!authorFound) return res.status(404).json({
-                message: "ID do autor não foi encontrado"
-            })
+            if (!authorFound) return next(new ErrorNotFound("ID do autor não foi encontrado"))
 
             return res.status(200).json(authorFound)
         } catch (error) {
@@ -55,9 +54,8 @@ class authorController {
 
             const authorUpdated = await author.findByIdAndUpdate(id, body)
 
-            if (!authorUpdated) return res.status(404).json({
-                message: "Erro ao atualizar o autor"
-            })
+            
+            if(!authorUpdated) return next(new ErrorNotFound("ID do autor não foi encontrado"))
 
             return res.status(200).json({
                 message: "Autor atualizado com sucesso"
@@ -73,7 +71,9 @@ class authorController {
         try {
             const { id } = req.params
 
-            await author.findByIdAndDelete(id)
+            const authorDeleted = await author.findByIdAndDelete(id)
+
+            if(!authorDeleted) return next(new ErrorNotFound("ID do autor não foi encontrado"))
 
             return res.status(200).json({
                 message: "Autor deletado com sucesso"
