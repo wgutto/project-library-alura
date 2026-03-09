@@ -1,10 +1,10 @@
 import ErrorNotFound from "../errors/ErrorNotFound.js"
-import { author } from "../models/Author.js"
+import { authors } from "../models/index.js"
 
 class authorController {
     static getAllAuthors = async (req, res, next) => {
         try {
-            const listAuthors = await author.find({})
+            const listAuthors = await authors.find({})
 
             return res.status(200).json(listAuthors)
         } catch (error) {
@@ -18,7 +18,7 @@ class authorController {
         try {
             const body = req.body
 
-            const authorRegistered = await author.create(body)
+            const authorRegistered = await authors.create(body)
 
             return res.status(201).json({
                 message: "Autor cadastrado com sucesso",
@@ -35,7 +35,7 @@ class authorController {
         try {
             const { id } = req.params
 
-            const authorFound = await author.findById(id)
+            const authorFound = await authors.findById(id)
 
             if (!authorFound) return next(new ErrorNotFound("ID do autor não foi encontrado"))
 
@@ -52,7 +52,7 @@ class authorController {
             const { id } = req.params
             const body = req.body
 
-            const authorUpdated = await author.findByIdAndUpdate(id, body)
+            const authorUpdated = await authors.findByIdAndUpdate(id, body)
 
             
             if(!authorUpdated) return next(new ErrorNotFound("ID do autor não foi encontrado"))
@@ -71,7 +71,7 @@ class authorController {
         try {
             const { id } = req.params
 
-            const authorDeleted = await author.findByIdAndDelete(id)
+            const authorDeleted = await authors.findByIdAndDelete(id)
 
             if(!authorDeleted) return next(new ErrorNotFound("ID do autor não foi encontrado"))
 

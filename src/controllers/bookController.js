@@ -1,5 +1,5 @@
 import ErrorNotFound from "../errors/ErrorNotFound.js"
-import book from "../models/Book.js"
+import { authors, book } from "../models/index.js"
 
 class BookController {
     static getAllBooks = async (req, res, next) => {
@@ -9,7 +9,7 @@ class BookController {
             return res.status(200).json(listBooks)
         } catch (error) {
             console.error(`Erro ao buscar livros: ${error.message}`)
-            
+
             next(error)
         }
     }
@@ -26,7 +26,7 @@ class BookController {
             })
         } catch (error) {
             console.error(`Erro ao cadastrar livro: ${error.message}`)
-            
+
             next(error)
         }
     }
@@ -54,14 +54,14 @@ class BookController {
 
             const bookUpdated = await book.findByIdAndUpdate(id, body)
 
-            if(!bookUpdated) return next(new ErrorNotFound("ID do livro não foi encontrado"))
+            if (!bookUpdated) return next(new ErrorNotFound("ID do livro não foi encontrado"))
 
             return res.status(200).json({
                 message: "Livro atualizado com sucesso"
             })
         } catch (error) {
             console.error(`Erro ao atualizar um livro: ${error.message}`)
-            
+
             next(error)
         }
     }
@@ -72,7 +72,7 @@ class BookController {
 
             const bookDeleted = await book.findByIdAndDelete(id)
 
-            if(!bookDeleted) return next(new ErrorNotFound("ID do livro não foi encontrado"))
+            if (!bookDeleted) return next(new ErrorNotFound("ID do livro não foi encontrado"))
 
             return res.status(200).json({
                 message: "Livro deletado com sucesso"
@@ -84,21 +84,49 @@ class BookController {
         }
     }
 
-    static searchByPublisher = async (req, res, next) => {
+    static searchByFilter = async (req, res, next) => {
         try {
-            const publisher = req.query.publisher
+            const booksFound = await searchProcesses(req.query)
 
-            const booksFound = await book.find({
-                publisher: publisher
-            })
+            if (!booksFound) return res.status(200).send([])
 
             return res.status(200).json(booksFound)
         } catch (error) {
             console.error(`Erro ao buscar editora de um livro: ${error.message}`)
-            
+
             next(error)
         }
     }
+}
+
+const searchProcesses = async (paramsQuery) => {
+    const { title, publisher, minPages, maxPages, nameAuthor } = paramsQuery
+
+    let search = {}
+
+    if (title) search.title = { $regex: title, $options: "i" }
+    if (publisher) search.publisher = { $regex: publisher, $options: "i" }
+
+    if (minPages || maxPages) search.pages = {}
+
+    if (minPages) search.pages.$gte = minPages
+    if (maxPages) search.pages.$lte = maxPages
+
+    if (nameAuthor) {
+        const authorFound = await authors.findOne({
+            name: nameAuthor
+        })
+
+        if (!authorFound) return null
+
+        const authorID = authorFound._id
+
+        search.author = authorID
+    }
+
+    const booksFound = await book.find(search).populate("author")
+
+    return booksFound
 }
 
 export default BookController
