@@ -4,9 +4,11 @@ import { authors, book } from "../models/index.js"
 class BookController {
     static getAllBooks = async (req, res, next) => {
         try {
-            const listBooks = await book.find({}).populate("author")
+            const listBooks = book.find({}).populate("author")
 
-            return res.status(200).json(listBooks)
+            req.result = listBooks
+
+            next()
         } catch (error) {
             console.error(`Erro ao buscar livros: ${error.message}`)
 
@@ -86,11 +88,15 @@ class BookController {
 
     static searchByFilter = async (req, res, next) => {
         try {
-            const booksFound = await searchProcesses(req.query)
+            const search = await searchProcesses(req.query)
 
-            if (!booksFound) return res.status(200).send([])
+            if (!search) return res.status(200).send([])
 
-            return res.status(200).json(booksFound)
+            const booksFound = book.find(search).populate("author")
+
+            req.result = booksFound
+
+            next()
         } catch (error) {
             console.error(`Erro ao buscar editora de um livro: ${error.message}`)
 
@@ -124,9 +130,7 @@ const searchProcesses = async (paramsQuery) => {
         search.author = authorID
     }
 
-    const booksFound = await book.find(search).populate("author")
-
-    return booksFound
+    return search
 }
 
 export default BookController

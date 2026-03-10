@@ -4,9 +4,11 @@ import { authors } from "../models/index.js"
 class authorController {
     static getAllAuthors = async (req, res, next) => {
         try {
-            const listAuthors = await authors.find({})
+            const listAuthors = authors.find({})
 
-            return res.status(200).json(listAuthors)
+            req.result = listAuthors
+
+            next()
         } catch (error) {
             console.error(`Erro ao buscar autores: ${error.message}`)
             
