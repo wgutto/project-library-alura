@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import autopopulate from "mongoose-autopopulate"
 
 // Criando o Schema para um livro
 const bookSchema = new mongoose.Schema({
@@ -19,17 +20,19 @@ const bookSchema = new mongoose.Schema({
         type: String,
         required: [true, "Identificar a editora é obrigatório"],
         enum: {
-            values: ["Nova era", "Editora Horizonte"],
+            values: ["Nova Era", "Editora Horizonte"],
             message: "A editora {VALUE} não é um valor permitido"
         }
     },
     author: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "authors",
-        required: [true, "Identificar um autor é obrigatório"]
+        required: [true, "Identificar um autor é obrigatório"],
+        autopopulate: true
     }
 }, { versionKey: false })
 
+bookSchema.plugin(autopopulate) // plugin para popular o campo auhor automanticamente
 const book = mongoose.model("books", bookSchema)
 
 export default book

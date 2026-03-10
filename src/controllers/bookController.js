@@ -4,7 +4,7 @@ import { authors, book } from "../models/index.js"
 class BookController {
     static getAllBooks = async (req, res, next) => {
         try {
-            const listBooks = book.find({}).populate("author")
+            const listBooks = book.find({})
 
             req.result = listBooks
 
@@ -92,7 +92,7 @@ class BookController {
 
             if (!search) return res.status(200).send([])
 
-            const booksFound = book.find(search).populate("author")
+            const booksFound = book.find(search)
 
             req.result = booksFound
 
